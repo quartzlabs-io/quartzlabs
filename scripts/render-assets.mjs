@@ -77,6 +77,12 @@ const ASSETS = [
   // raster of at least 112px for the entity card, and will not take an SVG.
   { file: "public/logo.png", w: 512, h: 512, html: icon(512) },
   { file: "public/favicon-32.png", w: 32, h: 32, html: icon(32) },
+  // Google recommends a favicon larger than 48x48 for the search result, and 32
+  // was the largest raster offered as rel="icon". The search listing showed the
+  // default globe. That is mostly a matter of Googlebot-Image not having crawled
+  // yet, which takes days, but 32 was also the one thing below their guideline.
+  { file: "public/favicon-48.png", w: 48, h: 48, html: icon(48) },
+  { file: "public/favicon-192.png", w: 192, h: 192, html: icon(192) },
 ];
 
 const chrome = spawn(

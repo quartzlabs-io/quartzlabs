@@ -101,12 +101,20 @@ const website = {
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {
-      /* The SVG is the icon; these two are for the places that cannot take one.
+      /* The SVG is the icon; the rasters are for the places that cannot take one.
         Safari before 16 ignores an SVG favicon entirely, and iOS uses
         apple-touch-icon for the home screen, squares it and drops transparency,
-        so that file is full-bleed on black rather than a transparent mark. */
+        so that file is full-bleed on black rather than a transparent mark.
+
+        48 and 192 exist for Google. Their guideline asks for a square favicon
+        larger than 48x48, and 32 was the largest raster this page offered, which
+        was the one guideline the site missed. It does not make the crawl any
+        faster: Googlebot-Image fetches the icon on its own pass, days to weeks
+        after the page is indexed. */
     }
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="icon" href="/favicon-192.png" sizes="192x192" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link
       rel="preload"
