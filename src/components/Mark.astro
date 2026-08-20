@@ -1,0 +1,86 @@
+---
+/**
+ * The Quartz Labs mark: a hexagonal crystal section crossed by one clock pulse.
+ * Quartz oscillates at an exact frequency, which is how machines agree on what
+ * time it is.
+ *
+ * Drawn on a 24-unit grid with a 2-unit margin. Monochrome by construction, so it
+ * inverts on any ground without a second asset.
+ *
+ *   solid    filled section with the pulse cut out as true negative space
+ *   outline  the same section drawn in line
+ *   signal   outline, with the pulse running past the crystal on both sides
+ */
+interface Props {
+  variant?: "solid" | "outline" | "signal";
+  /** Hide from assistive technology wherever the mark sits beside the wordmark
+   * or is pure decoration, so a screen reader does not say the name twice. */
+  decorative?: boolean;
+  class?: string;
+  width?: number;
+  height?: number;
+}
+const {
+  variant = "solid",
+  decorative = false,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const label = decorative
+  ? ({ "aria-hidden": "true" } as const)
+  : ({ role: "img", "aria-label": "Quartz Labs" } as const);
+
+const HEX = "M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z";
+const PULSE = "M6.8 14.7 H9.8 V9.3 H14.2 V14.7 H17.2";
+const SIGNAL = "M2 14.7 H9.7 V9.3 H14.3 V14.7 H22";
+
+/** One fixed id, not a generated one: every instance masks with identical
+ * geometry, so sharing the definition is correct, and a random id would make
+ * the build non-reproducible for no benefit. */
+const uid = "qz-pulse";
+---
+
+<svg viewBox="0 0 24 24" class={className} fill="none" {...label} {...rest}>
+  {
+    variant === "solid" && (
+      <>
+        <mask id={uid}>
+          <rect width="24" height="24" fill="white" />
+          <path
+            d={PULSE}
+            stroke="black"
+            stroke-width="2.1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+          />
+        </mask>
+        <path d={HEX} fill="currentColor" mask={`url(#${uid})`} />
+      </>
+    )
+  }
+
+  {
+    variant === "outline" && (
+      <g
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      >
+        <path d={HEX} />
+        <path d={PULSE} />
+      </g>
+    )
+  }
+
+  {
+    variant === "signal" && (
+      <g stroke="currentColor" stroke-linejoin="round" stroke-linecap="round">
+        <path d={HEX} stroke-width="1.8" opacity="var(--opacity-faint)" />
+        <path d={SIGNAL} stroke-width="1.8" />
+      </g>
+    )
+  }
+</svg>

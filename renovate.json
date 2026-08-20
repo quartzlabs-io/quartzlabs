@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "schedule": ["before 9am on monday"],
+  "prConcurrentLimit": 3,
+  "labels": ["dependencies"],
+  "minimumReleaseAge": "7 days",
+  "packageRules": [
+    {
+      "description": "The quarantine is the policy rather than a preference. Renovate must not open a PR for a release younger than the window npm itself refuses to install.",
+      "matchPackageNames": ["*"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Patch and minor updates for tooling travel together; a separate PR each is noise nobody reads.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "tooling"
+    },
+    {
+      "description": "Astro and Tailwind are the build; they get their own PR so a break is attributable.",
+      "matchPackageNames": ["astro", "tailwindcss", "@tailwindcss/vite"],
+      "groupName": "framework"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0 days",
+    "labels": ["security"]
+  }
+}
