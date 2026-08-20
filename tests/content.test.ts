@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { distFiles, doc, pages } from "./helpers";
+import { MAX_EM_DASH_PER_1000, SHAPE, VOCABULARY } from "../scripts/check-prose.mjs";
 
 /**
  * The rules that are not about taste.
@@ -197,5 +198,70 @@ describe("without JavaScript", () => {
         `a rule hides content unconditionally: ${rule}`
       ).toBe(true);
     }
+  });
+});
+
+describe("the writing a visitor actually reads", () => {
+  /**
+   * `check:prose` pulls comments out of code and the whole text of markdown. It
+   * cannot see a string literal, and every word on the page is a string
+   * literal, so the one body of writing here with no gate on it was the one the
+   * world reads. It reported zero em dashes while five sat in UI strings.
+   *
+   * This reads the built pages instead, which is also where the copy ends up
+   * rather than where it was typed. The rules are imported rather than copied:
+   * two lists of marked words drifting apart would be worse than one.
+   *
+   * `<title>` is out of scope on purpose, not to spare it. `Brand — Tagline` is
+   * a label with a separator, which is what Google itself prints, and it is not
+   * the tell this measures. What it measures is dashes inside sentences.
+   */
+  const visible = (file: string) => {
+    const d = doc(file);
+    for (const el of d.querySelectorAll("script, style")) el.remove();
+    const body = d.querySelector("body")?.textContent ?? "";
+    const meta = [
+      ...d.querySelectorAll('meta[name="description"], meta[property="og:description"]'),
+    ]
+      .map((m) => m.getAttribute("content") ?? "")
+      .join(" ");
+    return `${body} ${meta}`;
+  };
+
+  it("uses none of the marked vocabulary", () => {
+    for (const file of pages()) {
+      const hits = [
+        ...new Set(
+          (visible(file).match(new RegExp(VOCABULARY.source, "gi")) ?? []).map((w) =>
+            w.toLowerCase()
+          )
+        ),
+      ];
+      expect(hits, `${file} publishes ${hits.join(", ")}`).toEqual([]);
+    }
+  });
+
+  it('carries no "not just X" construction', () => {
+    for (const file of pages()) {
+      const hits = visible(file).match(new RegExp(SHAPE.source, "gi")) ?? [];
+      expect(hits, `${file} publishes ${hits.join(", ")}`).toEqual([]);
+    }
+  });
+
+  it("keeps em dashes under the rate the rest of the repository holds to", () => {
+    // Measured across every page at once rather than per page, because a short
+    // page like the not-found puts a single dash far over any rate.
+    let words = 0;
+    let dashes = 0;
+    for (const file of pages()) {
+      const text = visible(file);
+      words += text.split(/\s+/).filter(Boolean).length;
+      dashes += (text.match(/—/g) ?? []).length;
+    }
+    const rate = words ? (dashes / words) * 1000 : 0;
+    expect(
+      rate,
+      `${dashes} em dashes in ${words} published words, ${rate.toFixed(1)} per 1000`
+    ).toBeLessThanOrEqual(MAX_EM_DASH_PER_1000);
   });
 });
