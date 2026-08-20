@@ -112,6 +112,27 @@ await check("a route that does not exist answers 404", async () => {
   return r.status === 404 ? null : `answered ${r.status}, which reads as a soft 404`;
 });
 
+await check("the certificate is not about to expire", () => {
+  // Cloudflare renews on its own, and nothing here would notice if it stopped.
+  // A silent renewal failure ends as a browser warning that a visitor finds
+  // first. Cloudflare renews around thirty days out, so twenty-one days left is
+  // already the alarm rather than the deadline.
+  return new Promise((resolve) => {
+    const s = connect({ host, port: 443, servername: host }, () => {
+      const cert = s.getPeerCertificate();
+      s.destroy();
+      if (!cert?.valid_to) return resolve("no certificate presented");
+      const days = Math.floor((Date.parse(cert.valid_to) - Date.now()) / 86_400_000);
+      resolve(days < 21 ? `expires in ${days} days` : null);
+    });
+    s.on("error", (e) => resolve(e.message));
+    s.setTimeout(15_000, () => {
+      s.destroy();
+      resolve("timed out");
+    });
+  });
+});
+
 await check("TLS below 1.2 is refused", () => {
   return new Promise((resolve) => {
     const s = connect(
