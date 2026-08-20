@@ -54,20 +54,20 @@ Four jobs behind one `Ready to deploy` status. The tests read `dist/`, never `sr
 because a build step can rewrite what was authored and this repository has been bitten by
 exactly that twice.
 
-| Area          | What fails the build                                                          |
-| ------------- | ----------------------------------------------------------------------------- |
-| Design system | A raw value in markup, a token nothing uses, a property defined as itself     |
-| Type          | A size off the 1.25 scale, a fixed line box off the 4px grid                  |
-| Colour        | Any ink under WCAG AA on its ground, in either mode, or a token with hue      |
-| Motion        | A literal duration or a third easing curve inside a transition                |
-| Prose         | More than two em dashes per thousand words, or a word from the list           |
-| Privacy       | A personal identifier anywhere in the output or in a tracked file             |
-| Regulation    | Any of nine words naming a licensed activity in Brazil, near the products     |
-| Accessibility | An axe-core violation, a skipped heading level, a link with no name           |
-| Weight        | JavaScript over 15 KB gzipped, counting inline, or a framework runtime        |
-| Integrity     | A dead link, a missing meta tag, a page that is neither indexed nor noindexed |
-| Supply chain  | A known high-severity advisory                                                |
-| Live config   | Plain HTTP, weak TLS, a missing header or a rewritten `robots.txt`            |
+| Area          | What fails the build                                                           |
+| ------------- | ------------------------------------------------------------------------------ |
+| Design system | A raw value in markup, a token nothing uses, a property defined as itself      |
+| Type          | A size off the 1.25 scale, a fixed line box off the 4px grid                   |
+| Colour        | Any ink under WCAG AA on its ground, in either mode, or a token with hue       |
+| Motion        | A literal duration or a third easing curve inside a transition                 |
+| Prose         | More than two em dashes per thousand words, or a word from the list            |
+| Privacy       | A personal identifier anywhere in the output or in a tracked file              |
+| Regulation    | Any of nine words naming a licensed activity in Brazil, near the products      |
+| Accessibility | An axe-core violation, a skipped heading level, a link with no name            |
+| Weight        | JavaScript over 15 KB gzipped, counting inline, or a framework runtime         |
+| Integrity     | A dead link, a missing meta tag, a page that is neither indexed nor noindexed  |
+| Supply chain  | A known high-severity advisory                                                 |
+| Live config   | Plain HTTP, weak TLS, a missing header, a rewritten `robots.txt`, a stale cert |
 
 Every rule is there because the defect it names already happened here, and the reasoning
 lives in a comment beside the code it constrains.
@@ -85,6 +85,9 @@ and a managed `robots.txt` injected at the edge all reached production through
 that gap. They live in dashboard state, so a click can undo any of them without
 touching a file here. `npm run check:live` asks the deployed site directly and
 fails the build when the answer changes.
+
+It also runs on a clock, every Monday, because running only after a deploy means
+a quiet month is exactly when a flipped setting would go unnoticed.
 
 `wrangler` is a devDependency pinned by the lockfile, so no third-party action
 ever holds the credential. Two secrets live on the `production` environment
