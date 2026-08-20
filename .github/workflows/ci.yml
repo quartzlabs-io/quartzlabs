@@ -7,7 +7,13 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A pull request run is superseded by the next push to it, which is what a
+  # cancelling group is for. A run on main is not: it ends in a deploy, and
+  # cancelling one in flight leaves production in a state nobody chose. That
+  # already happened here, with two pushes a minute apart killing the first
+  # deploy during npm ci. The job-level group on deploy could not prevent it,
+  # because the cancellation comes from above the job.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 # Least privilege at the top; a job that needs more asks for it explicitly.
 permissions:
@@ -148,7 +154,8 @@ jobs:
     environment:
       name: production
       url: https://quartzlabs.io
-    # Never two deploys at once, and never cancel one in flight.
+    # Never two deploys at once. This group cannot stop a cancellation coming
+    # from the workflow level above it, which is why that one now spares main.
     concurrency:
       group: deploy-production
       cancel-in-progress: false
