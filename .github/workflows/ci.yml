@@ -24,7 +24,7 @@ jobs:
       # Pinned by commit, not by tag. A tag is a mutable pointer: whoever controls
       # the action's repository can move v7 to different code tomorrow, and every
       # workflow that trusts the tag runs it. The trailing comment keeps the
-      # version legible and lets Renovate update both together.
+      # version legible and lets Dependabot update both together.
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
         with:
           persist-credentials: false
