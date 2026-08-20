@@ -350,19 +350,22 @@ describe("metadata", () => {
 });
 
 describe("links", () => {
-  it("resolves every internal link to something that exists", () => {
+  it("resolves every internal link to something the host serves directly", () => {
+    // Not "to something that exists". The earlier version accepted both /privacy
+    // and /privacy/ because it tried `${href}/index.html` for either, and the
+    // host does not: a directory route without the slash answers 307 and only
+    // then 200. That shipped, and every click on the footer paid a round trip
+    // while the sitemap and the canonical already used the slash. A test looser
+    // than the server is a test that certifies a redirect as an arrival.
     const built = new Set(distFiles().map((f) => f.replace(/^dist/, "")));
     for (const file of pages()) {
       for (const [, href] of readFileSync(file, "utf8").matchAll(/href="(\/[^"#]*)"/g)) {
-        const candidates = [
-          href,
-          `${href}index.html`,
-          `${href}/index.html`,
-          `${href}.html`,
-        ];
+        const served = href.endsWith("/")
+          ? [`${href}index.html`]
+          : [href, `${href}.html`];
         expect(
-          candidates.some((c) => built.has(c.replace(/\/+/g, "/"))),
-          `${file} → ${href}`
+          served.some((c) => built.has(c)),
+          `${file} → ${href} is not served without a redirect`
         ).toBe(true);
       }
     }
