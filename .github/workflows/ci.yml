@@ -175,15 +175,8 @@ jobs:
 
       # Reports a broken deploy rather than preventing one, which is still worth
       # having: a green pipeline over a dead site is the failure that goes
-      # unnoticed longest. Retried, because the first deploy has to create a DNS
-      # record before the hostname answers.
-      - name: Smoke check
-        run: |
-          for i in 1 2 3 4 5 6; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 https://quartzlabs.io || echo 000)
-            echo "attempt $i: HTTP $code"
-            [ "$code" = "200" ] && exit 0
-            sleep 10
-          done
-          echo "the site did not answer 200 after the deploy"
-          exit 1
+      # unnoticed longest. It also asks the live host the questions dist/ cannot
+      # answer, because those live in dashboard state and a click can undo any of
+      # them without touching this repository.
+      - name: Live configuration
+        run: npm run check:live

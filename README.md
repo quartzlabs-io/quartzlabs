@@ -42,6 +42,7 @@ fifths of the page, which is the honest shape of a site with no images and no fr
 | `npm run preview`                | Serve the build                                            |
 | `npm run test`                   | Build, then 91 tests against `dist/`                       |
 | `npm run verify`                 | Format, types, design system, prose, secrets, build, tests |
+| `npm run check:live`             | Ask the deployed site what `dist/` cannot answer           |
 | `node scripts/render-assets.mjs` | Redraw the icons and the share card (needs Chrome)         |
 
 `lefthook` runs the fast checks before every commit and the full `verify` before every
@@ -66,6 +67,7 @@ exactly that twice.
 | Weight        | JavaScript over 15 KB gzipped, counting inline, or a framework runtime        |
 | Integrity     | A dead link, a missing meta tag, a page that is neither indexed nor noindexed |
 | Supply chain  | A known high-severity advisory                                                |
+| Live config   | Plain HTTP, weak TLS, a missing header or a rewritten `robots.txt`            |
 
 Every rule is there because the defect it names already happened here, and the reasoning
 lives in a comment beside the code it constrains.
@@ -74,7 +76,15 @@ lives in a comment beside the code it constrains.
 
 A push to `main` that clears every check deploys itself. The job runs only on a
 push to that branch, publishes the same `dist/` the tests read rather than
-rebuilding it, and then asks the live hostname for a 200.
+rebuilding it, and then interrogates the live host.
+
+That last step exists because everything else here can only see `dist/`, and
+`dist/` cannot know what the host does with it. A directory route answering 307
+before 200, plain HTTP answering 200 with no redirect, TLS 1.0 still accepted,
+and a managed `robots.txt` injected at the edge all reached production through
+that gap. They live in dashboard state, so a click can undo any of them without
+touching a file here. `npm run check:live` asks the deployed site directly and
+fails the build when the answer changes.
 
 `wrangler` is a devDependency pinned by the lockfile, so no third-party action
 ever holds the credential. Two secrets live on the `production` environment

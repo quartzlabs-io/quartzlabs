@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "verify": "npm run format:check && npm run typecheck && npm run check:tokens && npm run check:prose && npm run test",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "check:prose": "node scripts/check-prose.mjs"
+    "check:prose": "node scripts/check-prose.mjs",
+    "check:live": "node scripts/check-live.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
